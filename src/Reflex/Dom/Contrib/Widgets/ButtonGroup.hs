@@ -1,9 +1,7 @@
 {-# LANGUAGE GADTs               #-}
 {-# LANGUAGE RankNTypes          #-}
-{-# LANGUAGE QuasiQuotes         #-}
 {-# LANGUAGE RecursiveDo         #-}
 {-# LANGUAGE TypeFamilies        #-}
-{-# LANGUAGE TemplateHaskell     #-}
 {-# LANGUAGE FlexibleContexts    #-}
 {-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -175,11 +173,11 @@ radioGroup dynName dynEntryList cfg = do
       el "tr" $ do
         txt <- combineDyn (\v m -> fromMaybe "" $ Prelude.lookup v m)
                dynV dynEntryList
-        btnAttrs <- $(qDyn [| "type" =: "radio"
-                           <> "name" =: $(unqDyn [|dynName|])
-                           <> bool mempty ("checked" =: "checked")
-                              $(unqDyn [|dynChecked|])
-                           |])
+        let btnAttrs = 
+               (\n c -> "type" =: "radio"
+                        <> "name" =: n
+                        <> bool mempty ("checked" =: "checked") c
+               ) <$> dynName <*> dynChecked
         (b,_) <- el "td" $ elDynAttr' "input" btnAttrs $ return ()
         f <- holdDyn False $ leftmost [ False <$ (Blur  `domEvent` b)
                                       , True  <$ (Focus `domEvent` b)]
